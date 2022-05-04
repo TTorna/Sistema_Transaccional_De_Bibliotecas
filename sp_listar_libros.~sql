@@ -1,0 +1,48 @@
+-- sp_listar_libros
+
+CREATE OR REPLACE PACKAGE BIBLIO_PKG is
+
+  PROCEDURE sp_listar_libros(Parametro NUMBER, Registro OUT Sys_refcursor);
+
+END BIBLIO_PKG;
+
+CREATE OR REPLACE PACKAGE BODY BIBLIO_PKG is
+
+PROCEDURE sp_listar_libros(Parametro NUMBER, Registro OUT Sys_refcursor) AS
+   Script VARCHAR(500) := 'Select Distinct L.lib_codigo, L.lib_descripcion FROM Biblioteca.Libros L ';
+
+BEGIN
+
+    -- LIBROS LISTA TOTAL, DEFAULT
+
+     IF (Parametro = 1) THEN -- LIBROS SEGUN CANTIDAD DISPONIBLE
+        Script:=Script || ' Order By L.lib_cantidad Desc';
+     END IF;
+
+   -- Dbms_Output.put_line(Script);
+
+   OPEN Registro FOR Script;
+END;
+
+END BIBLIO_PKG;
+
+DECLARE
+    vParametro NUMBER;
+    vCodigo Biblioteca.Libros.lib_codigo%TYPE;
+    vNombre  Biblioteca.Libros.lib_descripcion%TYPE;
+    vRegistro SYS_REFCURSOR;
+
+
+BEGIN
+     vParametro:=1;
+     Biblioteca.BIBLIO_PKG.sp_listar_libros(vParametro, vRegistro);
+     LOOP
+      FETCH vRegistro INTO vCodigo, vNombre;
+      EXIT WHEN vRegistro%NOTFOUND;
+      Dbms_Output.put_line('ID: ' || vCodigo || '  Nombre del Libro: ' || vNombre);
+     END LOOP;
+     CLOSE vRegistro;
+END;
+
+COMMIT;
+
